@@ -1,19 +1,19 @@
 openapi: 3.0.0
 info:
   title: M3_ContentHostingProvisioning
-  version: 0.1.0
+  version: 3.0.0
   description: |
     5GMS AS M3 Content Hosting Provisioning API
-    Copyright © 2022 British Broadcasting Corporation
+    © 2023, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
     All rights reserved.
 tags:
   - name: M3_ContentHostingProvisioning
-    description: '5G Media Streaming: Application Server Provisioning (M3) APIs: Content Hosting Provisioning'
+    description: '5G Media Streaming: Application Server Configuration (M3) APIs: Content Hosting Provisioning'
 externalDocs:
-  description: 'TS 26.512 V16.x.x; 5G Media Streaming (5GMS); Protocols'
+  description: 'TS 26.512 V18.y.z; 5G Media Streaming (5GMS); Protocols'
   url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
 servers:
-  - url: '{apiRoot}/3gpp-m3/v1'
+  - url: '{apiRoot}/3gpp-m3/v3'
     variables:
       apiRoot:
         default: https://example.com
@@ -34,6 +34,12 @@ paths:
                 type: array
                 items:
                   $ref: 'TS26512_CommonData.yaml#/components/schemas/ResourceId'
+        '400':
+          # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '413':
+          # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
         '500':
           # Internal Server Error
           $ref: 'TS29571_CommonData.yaml#/components/responses/500'
@@ -72,15 +78,21 @@ paths:
               description: 'URL of the newly created Content Hosting Configuration (which may be redirected from the request URL).'
               required: true
               schema:
-                $ref: 'TS26512_CommonData.yaml#/components/schemas/Url'
-        '405':
-          # Method Not Allowed: Content Hosting Configuration resource already exists at the specified path
-          $ref: 'TS29571_CommonData.yaml#/components/responses/405'
+                $ref: 'TS26512_CommonData.yaml#/components/schemas/AbsoluteUrl'
+        '400':
+          # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '409':
+          # Conflict: Content Hosting Configuration resource already exists at the specified path
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '411':
+          # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
         '413':
-          # Payload too large
+          # Payload Too Large
           $ref: 'TS29571_CommonData.yaml#/components/responses/413'
         '414':
-          # URI too long
+          # URI Too Long
           $ref: 'TS29571_CommonData.yaml#/components/responses/414'
         '415':
           # Unsupported Media Type
@@ -92,8 +104,8 @@ paths:
           # Service Unavailable
           $ref: 'TS29571_CommonData.yaml#/components/responses/503'
         default:
-          $ref: 'TS29571_CommonData.yaml#/components/responses/default'    
-    # (Retrieval of individual Content Hosting Configuration resources is not permitted at reference point M3.)
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'   
+    # get (Retrieval of individual Content Hosting Configuration resources is not permitted at reference point M3.)
     put:
       operationId: updateContentHostingConfiguration
       summary: 'Update (by replacement) an existing Content Hosting Configuration for the specified Provisioning Session'
@@ -111,14 +123,23 @@ paths:
         '204':
           # No Content
           description: 'Content Hosting Configuration Unchanged'
+        '400':
+          # Bad Request: The request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '404':
           # Not Found
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          # Gone: This Content Hosting Configuration resource has been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
         '413':
-          # Payload too large
+          # Payload Too Large
           $ref: 'TS29571_CommonData.yaml#/components/responses/413'
         '414':
-          # URI too long
+          # URI Too Long
           $ref: 'TS29571_CommonData.yaml#/components/responses/414'
         '415':
           # Unsupported Media Type
@@ -138,14 +159,20 @@ paths:
         '204':
           # No Content
           description: 'Content Hosting Configuration Destroyed'
+        '400':
+          # Bad Request: The request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '404':
           # Not Found
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          # Gone: This Content Hosting Configuration resource has already been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
         '413':
-          # Payload too large
+          # Payload Too Large: No request body allowed for this operation
           $ref: 'TS29571_CommonData.yaml#/components/responses/413'
         '414':
-          # URI too long
+          # URI Too Long
           $ref: 'TS29571_CommonData.yaml#/components/responses/414'
         '500':
           # Internal Server Error
@@ -163,12 +190,12 @@ paths:
           required: true
           schema:
             $ref: 'TS26512_CommonData.yaml#/components/schemas/ResourceId'
-          description: 'The Provisioning Session identifier of an existing Content Hosting Configuration.'
+          description: "The Provisioning Session identifier of an existing Content Hosting Configuration."
     post:
       operationId: purgeContentHostingCache
       summary: 'Purge the content of the cache for the specified Content Hosting Configuration'
       requestBody:
-        description: 'The regular expression pattern for resources to purge from the cache'
+        description: "The regular expression pattern for resources to purge from the cache."
         required: true
         content:
           application/x-www-form-urlencoded:
@@ -190,21 +217,27 @@ paths:
         '204':
           # No Content
           description: 'No Content Purged'
+        '400':
+          # Bad Request: The request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '404':
           # Not Found
           $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          # Gone: This Content Hosting Configuration resource has been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
         '413':
-          # Payload too large
+          # Payload Too Large
           $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
         '415':
           # Unsupported Media Type
           $ref: 'TS29571_CommonData.yaml#/components/responses/415'
-        '414':
-          # URI too long
-          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
         '422':
-          # Unprocessable Entity (e.g. syntactically invalid regular expression in request body)
-          description: Unprocessable Entity
+          # Unprocessable Content: Regular expression in request body could not be processed by the 5GMS AS
+          description: 'Unprocessable Content'
           content:
             application/problem+json:
               schema:
